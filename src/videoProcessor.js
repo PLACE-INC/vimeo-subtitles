@@ -9,12 +9,13 @@ const TEMP_DIR = './temp_videos';
 const TIMEOUT = 60000; // Increased to 60 seconds
 const UPLOAD_TIMEOUT = 300000; // 5 minutes for uploads
 
-// Ensure temp directory exists
-if (!fs.existsSync(TEMP_DIR)) {
-  fs.mkdirSync(TEMP_DIR);
-}
 
 async function downloadVideo(downloadUrl, filename) {
+  // Ensure temp directory exists before each download
+  if (!fs.existsSync(TEMP_DIR)) {
+    fs.mkdirSync(TEMP_DIR, { recursive: true });
+  }
+
   const response = await fetch(downloadUrl, {
     timeout: TIMEOUT,
     headers: {
