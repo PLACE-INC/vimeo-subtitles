@@ -87,13 +87,11 @@ export async function processSingleVideo(videoId) {
 
     const files = await retry(async () => {
       const versions = await getVideoFiles(video.uri);
-      // Handle response as data property if present
-      const versionsList = versions.data || versions;
-      const sourceVersion = versionsList.find(version => version.is_source);
-      if (!sourceVersion?.download) {
+      const version = versions.data?.[0];
+      if (!version?.play?.source?.link) {
         throw new Error(`No download URL found for ${video.name}`);
       }
-      return { link: sourceVersion.download[0].link };
+      return { link: version.play.source.link };
     });
 
     const filename = `${videoId}_${Date.now()}.mp4`;
