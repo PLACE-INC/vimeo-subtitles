@@ -1,5 +1,6 @@
 import { Vimeo } from '@vimeo/vimeo';
 import dotenv from 'dotenv';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -41,11 +42,18 @@ export async function uploadVideoVersion(videoId, filePath) {
       reject(new Error('Upload request timed out'));
     }, TIMEOUT);
 
+    // Get just the filename without the path
+    const fileName = filePath.split('/').pop();
+
     client.request({
       method: 'POST',
       path: `/videos/${videoId}/versions`,
       query: {
-        file_name: filePath
+        upload: {
+          approach: 'tus',
+          size: fs.statSync(filePath).size
+        },
+        name: fileName
       }
     }, (error, body, statusCode) => {
       clearTimeout(timeout);
