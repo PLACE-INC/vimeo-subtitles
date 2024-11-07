@@ -1,5 +1,6 @@
 import { getAllVideos } from './vimeoClient.js';
 import { processSingleVideo } from './videoProcessor.js';
+import { validateVideoId } from './utils.js';
 import './cleanup.js';
 
 const TARGET_DATE = new Date('2022-05-20');
