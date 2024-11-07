@@ -10,7 +10,7 @@ export function validateVideoId(videoId) {
   return true;
 }
 
-export async function retry(operation, maxAttempts = 3, initialDelay = 1000) {
+export async function retry(operation, maxAttempts = 5, initialDelay = 5000) {
   let lastError;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -20,7 +20,13 @@ export async function retry(operation, maxAttempts = 3, initialDelay = 1000) {
       lastError = error;
       if (attempt === maxAttempts) break;
       
-      const delay = initialDelay * Math.pow(2, attempt - 1);
+      // Handle rate limiting specifically
+      let delay = initialDelay * Math.pow(2, attempt - 1);
+      if (error.message.includes('429') || error.message.includes('too many API requests')) {
+        delay = Math.max(delay, 60000); // At least 60 seconds for rate limits
+        console.log('Rate limit hit. Waiting before retry...');
+      }
+      
       console.log(`Attempt ${attempt} failed. Retrying in ${delay/1000} seconds...`);
       await setTimeout(delay);
     }
