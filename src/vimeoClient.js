@@ -35,6 +35,29 @@ export async function getVideo(videoId) {
   });
 }
 
+export async function uploadVideoVersion(videoId, filePath) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Upload request timed out'));
+    }, TIMEOUT);
+
+    client.request({
+      method: 'POST',
+      path: `/videos/${videoId}/versions`,
+      query: {
+        file_name: filePath
+      }
+    }, (error, body, statusCode) => {
+      clearTimeout(timeout);
+      if (error) {
+        reject(new Error(`Failed to initiate upload (${statusCode}): ${error.message}`));
+      } else {
+        resolve(body);
+      }
+    });
+  });
+}
+
 export async function getVideoFiles(videoUri) {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {

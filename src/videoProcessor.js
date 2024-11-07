@@ -1,5 +1,6 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
+import FormData from 'form-data';
 import { pipeline } from 'stream/promises';
 import { getVideo, getVideoFiles, client } from './vimeoClient.js';
 import { retry, validateVideoId } from './utils.js';
@@ -31,27 +32,31 @@ async function downloadVideo(downloadUrl, filename) {
 }
 
 async function replaceVideo(videoUri, filePath) {
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('Upload timed out'));
-    }, UPLOAD_TIMEOUT);
+  const videoId = videoUri.split('/').pop();
+  const uploadResponse = await uploadVideoVersion(videoId, filePath);
+  
+  if (!uploadResponse.upload || !uploadResponse.upload.upload_link) {
+    throw new Error('Failed to get upload URL');
+  }
 
-    client.upload(
-      filePath,
-      {
-        uri: videoUri,
-        timeout: UPLOAD_TIMEOUT
-      },
-      (error, body, statusCode) => {
-        clearTimeout(timeout);
-        if (error) {
-          reject(new Error(`Upload failed (${statusCode}): ${error.message}`));
-        } else {
-          resolve(body);
-        }
-      }
-    );
+  // Upload the file to the provided upload_link
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(filePath));
+
+  const response = await fetch(uploadResponse.upload.upload_link, {
+    method: 'PUT',
+    body: formData,
+    timeout: UPLOAD_TIMEOUT,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
   });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.statusText}`);
+  }
+
+  return response;
 }
 
 export function cleanupTempFiles(filePath) {
