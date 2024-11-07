@@ -51,9 +51,11 @@ export async function uploadVideoVersion(videoId, filePath) {
       query: {
         upload: {
           approach: 'tus',
-          size: fs.statSync(filePath).size
+          size: fs.statSync(filePath).size,
+          redirect_url: null
         },
-        file_name: fileName
+        file_name: fileName,
+        upload_approach: 'tus'
       }
     }, (error, body, statusCode) => {
       clearTimeout(timeout);
