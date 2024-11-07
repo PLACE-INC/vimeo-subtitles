@@ -1,6 +1,7 @@
 import { getAllVideos } from './vimeoClient.js';
 import { processSingleVideo } from './videoProcessor.js';
 import { validateVideoId } from './utils.js';
+import { loadVideoIdsFromFile, isVideoProcessed, markVideoAsProcessed } from './batchProcessor.js';
 import './cleanup.js';
 
 const TARGET_DATE = new Date('2022-05-20');
@@ -31,19 +32,49 @@ async function processAllVideos() {
   }
 }
 
-// Check if a video ID was provided as a command line argument
-const videoId = process.argv[2];
+async function processBatchFromFile(filePath) {
+  const videoIds = loadVideoIdsFromFile(filePath);
+  console.log(`Loaded ${videoIds.length} video IDs from file`);
 
-if (videoId) {
+  for (const [index, videoId] of videoIds.entries()) {
+    try {
+      validateVideoId(videoId);
+      
+      if (isVideoProcessed(videoId)) {
+        console.log(`Skipping already processed video ${videoId}`);
+        continue;
+      }
+
+      console.log(`Processing video ${index + 1}/${videoIds.length}: ${videoId}`);
+      const success = await processSingleVideo(videoId);
+      markVideoAsProcessed(videoId, success);
+      
+    } catch (error) {
+      console.error(`Error processing video ${videoId}:`, error.message);
+      markVideoAsProcessed(videoId, false);
+    }
+  }
+}
+
+// Check command line arguments
+const arg = process.argv[2];
+
+if (arg) {
   try {
-    validateVideoId(videoId);
-    console.log(`Testing with single video ID: ${videoId}`);
-    await processSingleVideo(videoId);
+    if (arg.endsWith('.txt')) {
+      console.log(`Processing videos from file: ${arg}`);
+      await processBatchFromFile(arg);
+    } else {
+      validateVideoId(arg);
+      console.log(`Processing single video ID: ${arg}`);
+      const success = await processSingleVideo(arg);
+      markVideoAsProcessed(arg, success);
+    }
   } catch (error) {
     console.error('Error:', error.message);
     process.exit(1);
   }
 } else {
-  console.log('No video ID provided, processing all videos...');
+  console.log('No video ID or file provided, processing all videos...');
   processAllVideos();
 }
