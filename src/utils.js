@@ -1,5 +1,15 @@
 import { setTimeout } from 'timers/promises';
 
+export function validateVideoId(videoId) {
+  if (!videoId || typeof videoId !== 'string') {
+    throw new Error('Invalid video ID');
+  }
+  if (!/^\d+$/.test(videoId)) {
+    throw new Error('Video ID must contain only numbers');
+  }
+  return true;
+}
+
 export async function retry(operation, maxAttempts = 3, initialDelay = 1000) {
   let lastError;
   

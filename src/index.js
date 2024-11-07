@@ -1,5 +1,6 @@
 import { getAllVideos } from './vimeoClient.js';
 import { processSingleVideo } from './videoProcessor.js';
+import './cleanup.js';
 
 const TARGET_DATE = new Date('2022-05-20');
 
@@ -16,8 +17,9 @@ async function processAllVideos() {
 
     console.log(`Found ${videosToProcess.length} videos without captions before May 20, 2022`);
 
-    for (const video of videosToProcess) {
+    for (const [index, video] of videosToProcess.entries()) {
       const videoId = video.uri.split('/').pop();
+      console.log(`Processing video ${index + 1}/${videosToProcess.length}`);
       await processSingleVideo(videoId);
     }
 
@@ -32,8 +34,14 @@ async function processAllVideos() {
 const videoId = process.argv[2];
 
 if (videoId) {
-  console.log(`Testing with single video ID: ${videoId}`);
-  processSingleVideo(videoId);
+  try {
+    validateVideoId(videoId);
+    console.log(`Testing with single video ID: ${videoId}`);
+    await processSingleVideo(videoId);
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
 } else {
   console.log('No video ID provided, processing all videos...');
   processAllVideos();

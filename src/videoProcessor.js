@@ -2,7 +2,7 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import { pipeline } from 'stream/promises';
 import { getVideo, getVideoFiles, client } from './vimeoClient.js';
-import { retry } from './utils.js';
+import { retry, validateVideoId } from './utils.js';
 
 const TEMP_DIR = './temp_videos';
 const TIMEOUT = 60000; // Increased to 60 seconds
@@ -111,6 +111,7 @@ export async function processSingleVideo(videoId) {
 
   } catch (error) {
     console.error(`Failed to process video ${videoId}:`, error.message);
+    console.error('Stack trace:', error.stack);
     return false;
   } finally {
     cleanupTempFiles(filePath);
