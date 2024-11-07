@@ -2,7 +2,7 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import { pipeline } from 'stream/promises';
-import { getVideo, getVideoFiles, client } from './vimeoClient.js';
+import { getVideo, getVideoFiles, uploadVideoVersion, client } from './vimeoClient.js';
 import { retry, validateVideoId } from './utils.js';
 
 const TEMP_DIR = './temp_videos';
