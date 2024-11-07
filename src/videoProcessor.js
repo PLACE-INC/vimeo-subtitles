@@ -43,11 +43,11 @@ async function replaceVideo(videoUri, filePath) {
   const fileBuffer = fs.readFileSync(filePath);
 
   const response = await fetch(uploadResponse.upload.upload_link, {
-    method: 'PUT',
+    method: 'PATCH',
     body: fileBuffer,
     timeout: UPLOAD_TIMEOUT,
     headers: {
-      'Content-Type': 'application/octet-stream',
+      'Content-Type': 'application/offset+octet-stream',
       'Tus-Resumable': '1.0.0',
       'Upload-Offset': '0',
       'Content-Length': fileBuffer.length.toString()
