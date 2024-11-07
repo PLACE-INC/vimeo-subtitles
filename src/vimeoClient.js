@@ -47,6 +47,7 @@ export async function getVideoFiles(videoUri) {
       method: 'GET',
       path: `/videos/${videoId}/versions`
     }, (error, body, statusCode) => {
+      console.log('Versions response:', JSON.stringify(body, null, 2));
       clearTimeout(timeout);
       if (error) {
         reject(new Error(`Failed to get video files (${statusCode}): ${error.message}`));
