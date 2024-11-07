@@ -41,11 +41,11 @@ export async function getVideoFiles(videoUri) {
       reject(new Error('Request timed out'));
     }, TIMEOUT);
 
-    // Extract video ID from URI and use proper endpoint
+    // Extract video ID from URI and use versions endpoint
     const videoId = videoUri.split('/').pop();
     client.request({
       method: 'GET',
-      path: `/videos/${videoId}/files`
+      path: `/videos/${videoId}/versions`
     }, (error, body, statusCode) => {
       clearTimeout(timeout);
       if (error) {
