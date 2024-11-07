@@ -39,21 +39,23 @@ async function replaceVideo(videoUri, filePath) {
     throw new Error('Failed to get upload URL');
   }
 
-  // Upload the file to the provided upload_link
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream(filePath));
+  // Read the file as a buffer
+  const fileBuffer = fs.readFileSync(filePath);
 
   const response = await fetch(uploadResponse.upload.upload_link, {
     method: 'PUT',
-    body: formData,
+    body: fileBuffer,
     timeout: UPLOAD_TIMEOUT,
     headers: {
-      'Content-Type': 'multipart/form-data'
+      'Content-Type': 'application/octet-stream',
+      'Tus-Resumable': '1.0.0',
+      'Upload-Offset': '0',
+      'Content-Length': fileBuffer.length.toString()
     }
   });
 
   if (!response.ok) {
-    throw new Error(`Upload failed: ${response.statusText}`);
+    throw new Error(`Upload failed: ${response.statusText} (${response.status})`);
   }
 
   return response;
