@@ -54,7 +54,7 @@ async function replaceVideo(videoUri, filePath) {
   });
 }
 
-function cleanupTempFiles(filePath) {
+export function cleanupTempFiles(filePath) {
   try {
     if (filePath && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
